@@ -11,6 +11,7 @@ def main():
     parser = argparse.ArgumentParser("resource_monitoring_client.py")
     parser.add_argument("--server-address", action="store", dest="server_address", default="localhost", help="set the server address ip (default: localhost)")
     parser.add_argument("--server-port", action="store", dest="server_port", default=6379, help="set the server port (default: 6379)")
+    parser.add_argument("--client-name", action="store", dest="client_name", default="client_name", help="set the client name (default: client_name)")
     args = parser.parse_args()
 
     redis_server = redis.Redis(host=args.server_address, port=args.server_port)
@@ -19,6 +20,15 @@ def main():
 
     # Main loop
     while True:
+
+        sensor_temperature = {}
+        for sensor_name, sensor_infos in psutil.sensors_temperatures().items():
+            for info in sensor_infos:
+                for name, value in info._asdict().items():
+                    sensor_temperature = {sensor_name: {
+                        name: value
+                    }}
+
         # See https://psutil.readthedocs.io/en/latest/
         resource_values = {
             # CPU
@@ -63,13 +73,7 @@ def main():
             },
 
             # Sensors
-            '''
-            # TODO : find a way to use temperature info when it's a list
-            "sensor_temperature": {
-                sensor_temperature_name: {
-                    name: value for name, value in sensor_temperature_info._asdict().items()
-                } for sensor_temperature_name, sensor_temperature_info in psutil.sensors_temperatures().items()
-            },'''
+            "sensor_temperature": sensor_temperature,
             "sensor_fan": {
                 sensor_fan_name: {
                     name: value for name, value in sensor_fan_info._asdict().items()
@@ -80,7 +84,7 @@ def main():
             }
         }
 
-        print(resource_values)
+        redis_server.set(f"resource_monitoring_client:{args.client_name}", json.dumps(resource_values))
 
         sleep(0.5)
 
