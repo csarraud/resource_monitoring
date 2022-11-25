@@ -4,6 +4,8 @@
 chmod +x client/setup.sh
 chmod +x server/setup.sh
 
+export REPO_DIR=$(pwd)
+
 # Setup client and server
-./client/setup.sh
-./server/setup.sh
+$REPO_DIR/client/setup.sh
+$REPO_DIR/server/setup.sh

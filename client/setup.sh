@@ -1,7 +1,7 @@
 #!/bin/bash
 echo "========== Client setup =========="
 
-cd client
+cd $REPO_DIR/client
 
 echo "Installing python packages ..."
 pip install -r requirements.txt
